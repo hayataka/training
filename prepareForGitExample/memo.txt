@@ -1,0 +1,10 @@
+projectを作る
+いくつかコミットする
+コミットをわかりやすいログにするために直す
+ git log --oneline --decorate --graph master
+　git reset --soft 
+ masterに誤ってコミットしていた場合
+ git cherry-pick
+ git reset --hard HEAD~n
+ 
+
