@@ -1,46 +1,52 @@
 package com.github.hayataka.prepareForGitExample;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.junit.Test;
 
+import com.github.hayataka.prepareForGitExample.initializer.DbInitializer;
+
 public class H2ConfigTest {
-
-	// ~/db名および、ファイルパスを指定する
-	// DB名だけ書くとカレントディレクトリにDBができる
-	private final static String DRIVER_URL = "jdbc:h2:file:.target/awaretweet";
-
-	private final static String DRIVER_NAME = "org.h2.Driver";
-
-	private final static String USER_NAME = "sa";
-
-	private final static String PASSWORD = "";
 
 	@Test
 	public void testCreate() {
-		Connection con = this.createConnection();
-		this.closeConnection(con);
-	}
-	
-	public Connection createConnection() {
-		try {
-			Class.forName(DRIVER_NAME);
-			Connection con = DriverManager.getConnection(DRIVER_URL, USER_NAME, PASSWORD);
-			return con;
-		} catch (ClassNotFoundException e) {
-			System.out.println("Can't Find H2 Driver.\n");
-		} catch (SQLException e) {
-			System.out.println("Connection Error.\n");
-		}
-		return null;
+		DbInitializer init = new DbInitializer();
+		init.createConnection();
+		init.close();
 	}
 
-	public void closeConnection(Connection con) {
-		try {
-			con.close();
-		} catch (Exception ex) {
+	@Test
+	public void testInitialData() throws IOException, SQLException {
+
+		try (DbInitializer init = new DbInitializer()) {
+			init.createConnection();
+
+			try (BufferedReader br = init.fileToReader("/schema.sql")) {
+				List<String> line = init.toLine(br);
+				String delimiter = System.getProperty("line.separator");
+				String sql = init.toString(line, delimiter);
+				PreparedStatement ps = init.prepareStatement(sql);
+				ps.executeUpdate();
+				init.close(ps);
+			}
+
+			List<String> line;
+			try (BufferedReader br = init.fileToReader("/data.sql")) {
+				line = init.toLine(br);
+			}
+			for (String sql : line) {
+				PreparedStatement ps = init.prepareStatement(sql);
+				ps.executeUpdate();
+				// System.out.println(ret);
+				init.close(ps);
+			}
+
 		}
+
 	}
+
 }
