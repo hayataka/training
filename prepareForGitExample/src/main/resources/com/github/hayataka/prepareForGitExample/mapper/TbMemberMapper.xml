@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.hayataka.prepareForGitExample.mapper.TbMemberMapper">
+  <select id="selectList" resultType="TbMemberEntity">
+    select * from TB_MEMBER;
+  </select>
+  
+  <insert id="create">
+CREATE TABLE TB_MEMBER(
+	ID INT DEFAULT 1 PRIMARY KEY AUTO_INCREMENT
+	,NAME VARCHAR(255) DEFAULT ''
+	,BIRTHDAY DATE
+	,DELETE_FLAG INT DEFAULT 0
+);
+  </insert>
+  
+  <insert id="insert">
+  INSERT INTO TB_MEMBER (NAME ,BIRTHDAY) VALUES (#{name},#{birthday});
+  </insert>
+  
+</mapper>
