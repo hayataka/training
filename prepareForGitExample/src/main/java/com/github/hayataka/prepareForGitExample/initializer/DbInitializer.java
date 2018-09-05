@@ -86,6 +86,9 @@ public class DbInitializer implements Closeable {
 		return prepareStatement;
 	}
 	public void close() {
+		if (_con == null) {
+			return;
+		}
 		try {
 			_con.close();
 		} catch (Exception e) {
@@ -105,4 +108,30 @@ public class DbInitializer implements Closeable {
 		
 	}
 
+	public void prepare() throws IOException, SQLException  {
+		try (DbInitializer init = new DbInitializer()) {
+			init.createConnection();
+
+			try (BufferedReader br = init.fileToReader("/schema.sql")) {
+				List<String> line = init.toLine(br);
+				String delimiter = System.getProperty("line.separator");
+				String sql = init.toString(line, delimiter);
+				PreparedStatement ps = init.prepareStatement(sql);
+				ps.executeUpdate();
+				init.close(ps);
+			}
+
+			List<String> line;
+			try (BufferedReader br = init.fileToReader("/data.sql")) {
+				line = init.toLine(br);
+			}
+			for (String sql : line) {
+				PreparedStatement ps = init.prepareStatement(sql);
+				ps.executeUpdate();
+				// System.out.println(ret);
+				init.close(ps);
+			}
+
+		}
+	}
 }
